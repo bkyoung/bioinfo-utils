@@ -3,65 +3,54 @@
 import csv, sys, re
 from optparse import OptionParser
 
-def s_to_a(r):
+def listify(r):
     '''
     Convert a string into a list
     '''
     return r.split(',')
 
-def column_range(r):
-    '''
-    Converts column range into meaningful values for a slice
-    EX: 2:6 at the command line results in a slice of [1:6]
-    '''
-    b = int(r.split(':')[0]) - 1
-    e = int(r.split(':')[1])
-    return (b, e)
-
 def get_columns(line, spec):
     '''
     Returns the specified columns of the line
     '''
-    if re.compile("^.+:.+$").match(spec):
-        b, e = column_range(spec)
+    if ":" in spec:
+        b = int(spec.split(':')[0]) - 1
+        e = int(spec.split(':')[1])
         return line[b:e]
     else:
-        return [line[int(spec) - 1]]
-
-def match_pair(m):
-    '''
-    Returns column and string to search for in a line
-    '''
-    c = int(m.split(':')[0]) - 1
-    s = m.split(':')[1]
-    return (c, s)
+        c = int(spec) - 1
+        return [line[c]]
 
 def match_line(line, match_list):
     '''
     Returns True if all match criteria matched
     '''
-    matches = s_to_a(match_list)
+    matches = listify(match_list)
     matched = False
     for match in matches:
-        c, m = match_pair(match)
-        if line[c] == m:
+        c = int(match.split(':')[0]) - 1
+        s = match.split(':')[1]
+        if line[c] == s:
             matched = True
         else:
             matched = False
             break
     return matched
 
-def writeln(line, column_list):
+def extracted_line(line, cl, delimiter):
     '''
     Return the string we will write to file, derived from the specified 
     columns of the supplied line.
     '''
+    if cl == None:
+        return "{0}\n".format(delimiter.join(line))
+
     l = []
-    cl = s_to_a(column_list)
-    for c in cl:
+    column_list = listify(cl)
+    for c in column_list:
         l += get_columns(line, c)
 
-    return "{0}\n".format("\t".join(l))
+    return "{0}\n".format(delimiter.join(l))
 
 
 if __name__ == '__main__':
@@ -73,6 +62,7 @@ if __name__ == '__main__':
     '''
 
     parser = OptionParser()
+    parser.add_option("-d", "--delimiter", dest="delimiter", default="\t", help="alternate delimiter (must be a single character.  DEFAULT is a TAB)")
     parser.add_option("-i", "--infile", dest="inputfile", help="input file name")
     parser.add_option("-o", "--outfile", dest="outputfile", help="output file name")
     parser.add_option("-c", "--columns", dest="columns", 
@@ -97,17 +87,17 @@ if __name__ == '__main__':
     with open(options.inputfile, 'r') as infile:
         with open(options.outputfile, 'w') as outfile:
             i = 0
-            for line in csv.reader(infile, delimiter='\t', quoting=csv.QUOTE_NONE ):
+            for line in csv.reader(infile, delimiter=options.delimiter, quoting=csv.QUOTE_NONE ):
                 # Always write the first line of the file (column names)
                 if i == 0:
-                    outfile.write(writeln(line, options.columns))
+                    outfile.write(extracted_line(line, options.columns, options.delimiter))
                     i += 1
                 # If we specified match criteria, only write lines that match
                 elif options.match:
                     if match_line(line, options.match):
-                        outfile.write(writeln(line, options.columns))
-                # If we didn't specify a match criteria, write all lines
+                        outfile.write(extracted_line(line, options.columns, options.delimiter))
+                # If we didn't specify a match criteria, write specified columns for all lines
                 elif not options.match:
-                    outfile.write(writeln(line, options.columns))
+                    outfile.write(extracted_line(line, options.columns, options.delimiter))
             outfile.close()
         infile.close()

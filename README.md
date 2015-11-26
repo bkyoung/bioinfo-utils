@@ -2,15 +2,18 @@
 This repo contains an ad-hoc collection of utilities for processing data files and extracting desired data.  Expect this repo to evolve over time as new needs arise.
 
 ## tsv-extractor.py
-This utility can be used to extract the specified columns of a TSV file (tab seperated values).  Further, you can filter on an arbitrary column, thus extracting only lines that match on the specified column and value.  Additionally, the utility supports compund expressions for column and match selectors, as described in the Examples section below.
+This utility can be used to extract the specified columns of a delimited file (tab seperated values (tsv) by default).  Further, you can filter on an arbitrary column, thus extracting only lines that match on the specified column and value.  Additionally, the utility supports compund expressions for column and match selectors, as described in the `Usage Examples` section below.  Finally, you may choose an alternative column delimiter if you are dealing with a file delimited by a character other than a TAB ('\t').
 
-#### Help Output
+##### Help Output
 ```bash
 $ ./tsv-extractor.py -h
-Usage: extractor.py [options]
+Usage: tsv-extractor.py [options]
 
 Options:
   -h, --help            show this help message and exit
+  -d DELIMITER, --delimiter=DELIMITER
+                        alternate delimiter (must be a single character.
+                        DEFAULT is a TAB)
   -i INPUTFILE, --infile=INPUTFILE
                         input file name
   -o OUTPUTFILE, --outfile=OUTPUTFILE
@@ -24,7 +27,7 @@ Options:
                         all lines where column 2 contains 'chr1'
 ```
 
-#### Examples
+##### Usage Examples
 Extract the first six columns from lines in the input file where column 2 matches on "chr1": 
 ```bash
 $ ./tsv-extractor.py -i inputfile.tsv -o outputfile.tsv --cols=1:6 --match=2:chr1
@@ -40,7 +43,7 @@ Extract the first seven columns, but move the seventh column to the fourth posit
 $ ./tsv-extractor.py -i inputfile.tsv -o outputfile.tsv -c 1:3,7,4:6
 ```
 
-Extract columns thirty folowed by one through six, where column two matches 'chr4' and column eight matches 'rs232':
+Extract columns thirty followed by one through six, where column two matches 'chr4' and column eight matches 'rs232':
 ```bash
 $ ./tsv-extractor.py -i inputfile.tsv -o outputfile.tsv -c 30,1:6 -m 2:chr4,8:rs232
 ```
