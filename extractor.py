@@ -9,6 +9,24 @@ def listify(r):
     '''
     return r.split(',')
 
+def find_column_by_name(line, column_name):
+    '''
+    Return the index + 1 for a given column header name
+    '''
+    i = 0
+    col_found = False
+    for l in line:
+        if l.lower() == column_name.lower():
+            col_found = True
+            column_index = i
+        else:
+            i += 1
+        if col_found == True:
+            return str(column_index + 1)
+    
+    if not col_found:
+        raise Exception('Column name ' + column_name + ' was not found.  Please check your spelling.')
+
 def get_columns(line, spec):
     '''
     Returns the specified columns of the line
@@ -62,13 +80,14 @@ if __name__ == '__main__':
     '''
 
     parser = OptionParser()
-    parser.add_option("-d", "--delimiter", dest="delimiter", default="\t", help="alternate delimiter (must be a single character.  DEFAULT is a TAB)")
+    parser.add_option("-d", "--delimiter", dest="delimiter", default="\t", help="alternate delimiter (must be a single character.  DEFAULT is a TAB.)")
     parser.add_option("-i", "--infile", dest="inputfile", help="input file name")
     parser.add_option("-o", "--outfile", dest="outputfile", help="output file name")
     parser.add_option("-c", "--columns", dest="columns", 
-        help="columns to select.  If not specified, all columns will be selected.  EX: 1:6 to select the first 6 columns, or 2:8,15 to select columns 2 - 8 and 15")
+        help="column numbers to select.  If not specified, all columns will be selected.  EX: 1:6 to select the first 6 columns, or 2:8,15 to select columns 2 - 8 and 15.  You can also say 1:3,9,4:7 to reorder columns in the output file.")
+    parser.add_option("-n", "--column-names", dest="columns_by_name", help="columns to select by column header name instead of column number.  This requires that the first line in the file be column headers.  Columns in the output file will apear in the order listed here.")
     parser.add_option("-m", "--match", dest="match", 
-        help="column and string to match on.  EX: 2:chr1 to match all lines where column 2 contains 'chr1'")
+        help="column and string to match on.  EX: 2:chr1 to match all lines where column 2 contains 'chr1'.")
     (options, args) = parser.parse_args()
     
     if not options.inputfile:
@@ -90,6 +109,15 @@ if __name__ == '__main__':
             for line in csv.reader(infile, delimiter=options.delimiter, quoting=csv.QUOTE_NONE ):
                 # Always write the first line of the file (column names)
                 if i == 0:
+                    # First, let's convert named columns to their column number(s)
+                    if options.columns_by_name:
+                        cbn = options.columns_by_name.split(',')
+                        for col in cbn:
+                            index = find_column_by_name(line, col)
+                            if options.columns:
+                                options.columns += ',{}'.format(index)
+                            else:
+                                options.columns = index
                     outfile.write(extracted_line(line, options.columns, options.delimiter))
                     i += 1
                 # If we specified match criteria, only write lines that match

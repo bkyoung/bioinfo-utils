@@ -1,49 +1,68 @@
 # Bioinformatics Utilities
 This repo contains an ad-hoc collection of utilities for processing data files and extracting desired data.  Expect this repo to evolve over time as new needs arise.
 
-## tsv-extractor.py
-This utility can be used to extract the specified columns of a delimited file (tab seperated values (tsv) by default).  Further, you can filter on an arbitrary column, thus extracting only lines that match on the specified column and value.  Additionally, the utility supports compund expressions for column and match selectors, as described in the `Usage Examples` section below.  Finally, you may choose an alternative column delimiter if you are dealing with a file delimited by a character other than a TAB ('\t').
+## extractor.py
+This utility can be used to extract the specified columns of a delimited file.  By default, if no delimiter is specified, tabs are expected, however, you can specify a different delimiter.  You can filter your output on a value in an arbitrary column, thus extracting only lines that match on the specified column and value.  Additionally, the utility supports compund expressions for column and match selectors, as described in the `Usage Examples` section below.  Finally, you may use column header names instead of column numbers to specify which columns to extract.
+
+__NOTE:__ At this time, no effort is made to deduplicate the column list.  If a column is listed multiple times, it will apear that many times in the output file.  It is assumed that the column was listed the number of times it was desired to appear in the output file.
 
 ##### Help Output
 ```bash
-$ ./tsv-extractor.py -h
-Usage: tsv-extractor.py [options]
+$ ./extractor.py -h
+Usage: extractor.py [options]
 
 Options:
   -h, --help            show this help message and exit
   -d DELIMITER, --delimiter=DELIMITER
                         alternate delimiter (must be a single character.
-                        DEFAULT is a TAB)
+                        DEFAULT is a TAB.)
   -i INPUTFILE, --infile=INPUTFILE
                         input file name
   -o OUTPUTFILE, --outfile=OUTPUTFILE
                         output file name
   -c COLUMNS, --columns=COLUMNS
-                        columns to select.  If not specified, all columns will
-                        be selected.  EX: 1:6 to select the first 6 columns,
-                        or 2:8,15 to select columns 2 - 8 and 15
+                        column numbers to select.  If not specified, all
+                        columns will be selected.  EX: 1:6 to select the first
+                        6 columns, or 2:8,15 to select columns 2 - 8 and 15.
+                        You can also say 1:3,9,4:7 to reorder columns in the
+                        output file.
+  -n COLUMNS_BY_NAME, --column-names=COLUMNS_BY_NAME
+                        columns to select by column header name instead of
+                        column number.  This requires that the first line in
+                        the file be column headers.  Columns in the output
+                        file will apear in the order listed here.
   -m MATCH, --match=MATCH
                         column and string to match on.  EX: 2:chr1 to match
-                        all lines where column 2 contains 'chr1'
+                        all lines where column 2 contains 'chr1'.
 ```
 
 ##### Usage Examples
 Extract the first six columns from lines in the input file where column 2 matches on "chr1": 
 ```bash
-$ ./tsv-extractor.py -i inputfile.tsv -o outputfile.tsv --cols=1:6 --match=2:chr1
+$ ./extractor.py -i inputfile.tsv -o outputfile.tsv --cols=1:6 --match=2:chr1
 ```
 
 Extract columns one through six and thirty, where column two matches 'chr4':
 ```bash
-$ ./tsv-extractor.py -i inputfile.tsv -o outputfile.tsv --cols=1:6,30 --match=2:chr4
+$ ./extractor.py -i inputfile.tsv -o outputfile.tsv --cols=1:6,30 --match=2:chr4
 ```
 
 Extract the first seven columns, but move the seventh column to the fourth position:
 ```bash
-$ ./tsv-extractor.py -i inputfile.tsv -o outputfile.tsv -c 1:3,7,4:6
+$ ./extractor.py -i inputfile.tsv -o outputfile.tsv -c 1:3,7,4:6
 ```
 
 Extract columns thirty followed by one through six, where column two matches 'chr4' and column eight matches 'rs232':
 ```bash
-$ ./tsv-extractor.py -i inputfile.tsv -o outputfile.tsv -c 30,1:6 -m 2:chr4,8:rs232
+$ ./extractor.py -i inputfile.tsv -o outputfile.tsv -c 30,1:6 -m 2:chr4,8:rs232
+```
+
+Extract columns 1 - 6 from a CSV delimited file:
+```bash
+$ ./extractor.py -i inputfile.tsv -o outputfile.tsv --cols=1:6 --delimiter=,
+```
+
+Extract columns named Chr,FuncrefGene,RegulomeCategory2,RegulomeCategory5,GenesWithin60kb:
+```bash
+$ ./extractor.py -i inputfile.tsv -o outputfile.tsv --column-names=Chr,FuncrefGene,RegulomeCategory2,RegulomeCategory5,GenesWithin60kb
 ```
