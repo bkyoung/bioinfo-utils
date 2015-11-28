@@ -32,11 +32,27 @@ def get_columns(line, spec):
     Returns the specified columns of the line
     '''
     if ":" in spec:
-        b = int(spec.split(':')[0]) - 1
-        e = int(spec.split(':')[1])
+        try:
+            b = int(spec.split(':')[0]) - 1
+        except:
+            raise Exception("When specifying column numbers, they must be integers: '" + spec + "' contains '" + spec.split(':')[0] + "', which violates this rule.")
+        try:
+            e = int(spec.split(':')[1])
+        except:
+            raise Exception("When specifying column numbers, they must be integers: '" + spec + "' contains '" + spec.split(':')[1] + "', which violates this rule.")
+
         return line[b:e]
     else:
-        c = int(spec) - 1
+        try:
+            c = int(spec) - 1
+        except:
+            raise Exception("When specifying column numbers, they must be integers: '" + spec + "' violates this rule.")
+
+        try:
+            line[c]
+        except IndexError:
+            raise Exception("You specified a column number that doesn't exist: " + str(c + 1) + " (out of range 0 - " + str(len(line)) + ")")
+
         return [line[c]]
 
 def match_line(line, match_list):
@@ -46,13 +62,19 @@ def match_line(line, match_list):
     matches = listify(match_list)
     matched = False
     for match in matches:
-        c = int(match.split(':')[0]) - 1
+        try:
+            c = int(match.split(':')[0]) - 1
+        except:
+            raise Exception("When specifying column numbers, they must be integers: '" + match + "' contains '" + match.split(":")[0] + "', which violates this rule.")
         s = match.split(':')[1]
-        if line[c] == s:
-            matched = True
-        else:
-            matched = False
-            break
+        try:
+            if line[c] == s:
+                matched = True
+            else:
+                matched = False
+                break
+        except IndexError:
+            raise Exception("You specified a column number that doesn't exist: " + str(c + 1))
     return matched
 
 def extracted_line(line, cl, delimiter):
