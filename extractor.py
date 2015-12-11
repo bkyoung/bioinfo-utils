@@ -62,19 +62,26 @@ def match_line(line, match_list):
     matches = listify(match_list)
     matched = False
     for match in matches:
-        try:
-            c = int(match.split(':')[0]) - 1
-        except:
-            raise Exception("When specifying column numbers, they must be integers: '" + match + "' contains '" + match.split(":")[0] + "', which violates this rule.")
-        s = match.split(':')[1]
-        try:
-            if line[c] == s:
+        if ":" in match:
+            try:
+                c = int(match.split(':')[0]) - 1
+            except:
+                raise Exception("When specifying column numbers, they must be integers: '" + match + "' contains '" + match.split(":")[0] + "', which violates this rule.")
+            s = match.split(':')[1]
+            try:
+                if line[c] == s:
+                    matched = True
+                else:
+                    matched = False
+                    break
+            except IndexError:
+                raise Exception("You specified a column number that doesn't exist: " + str(c + 1))
+        else:
+            if match in line:
                 matched = True
             else:
                 matched = False
                 break
-        except IndexError:
-            raise Exception("You specified a column number that doesn't exist: " + str(c + 1))
     return matched
 
 def extracted_line(line, cl, delimiter):
@@ -109,7 +116,7 @@ if __name__ == '__main__':
         help="column numbers to select.  If not specified, all columns will be selected.  EX: 1:6 to select the first 6 columns, or 2:8,15 to select columns 2 - 8 and 15.  You can also say 1:3,9,4:7 to reorder columns in the output file.")
     parser.add_option("-n", "--column-names", dest="columns_by_name", help="columns to select by column header name instead of column number.  This requires that the first line in the file be column headers.  Columns in the output file will apear in the order listed here.")
     parser.add_option("-m", "--match", dest="match", 
-        help="column and string to match on.  EX: 2:chr1 to match all lines where column 2 contains 'chr1'.")
+        help="(optional) column and string to match on.  EX: 2:chr1 to match all lines where column 2 contains 'chr1', or chr1 to match any column containing 'chr1'.  NOTE: multiple values listed together are ANDed together.")
     (options, args) = parser.parse_args()
     
     if not options.inputfile:
@@ -117,11 +124,6 @@ if __name__ == '__main__':
 
     if not options.outputfile:
         parser.error('Output filename not given')
-
-    if options.match:
-        # TODO: Write a regex that allows for optional (',' followed by another match pair)*
-        if not re.compile(".+:.+").match(options.match):
-            parse.error('Invalid match arguments.  Must look like <int>:<str> (i.e. 2:chr1')
 
     csv.field_size_limit(sys.maxsize)
     

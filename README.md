@@ -32,8 +32,10 @@ Options:
                         the file be column headers.  Columns in the output
                         file will apear in the order listed here.
   -m MATCH, --match=MATCH
-                        column and string to match on.  EX: 2:chr1 to match
-                        all lines where column 2 contains 'chr1'.
+                        (optional) column and string to match on.  EX: 2:chr1
+                        to match all lines where column 2 contains 'chr1', or
+                        chr1 to match any column containing 'chr1'.  NOTE:
+                        multiple values listed together are ANDed together.
 ```
 
 ##### Usage Examples
@@ -65,4 +67,14 @@ $ ./extractor.py -i inputfile.tsv -o outputfile.tsv --cols=1:6 --delimiter=,
 Extract columns named Chr,FuncrefGene,RegulomeCategory2,RegulomeCategory5,GenesWithin60kb:
 ```bash
 $ ./extractor.py -i inputfile.tsv -o outputfile.tsv --column-names=Chr,FuncrefGene,RegulomeCategory2,RegulomeCategory5,GenesWithin60kb
+```
+
+Extract all rows where any column matches 'E003':
+```bash
+$ ./extractor.py -i inputfile.tsv -o outputfile.tsv -m E003
+```
+
+Extract all rows where any column matches 'E003' or 'E027':
+```bash
+$ ./extractor.py -i inputfile.tsv -o outputfile.tsv -m E003,E027
 ```
