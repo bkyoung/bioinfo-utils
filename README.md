@@ -1,8 +1,18 @@
 # Bioinformatics Utilities
-This repo contains an ad-hoc collection of utilities for processing data files and extracting desired data.  Expect this repo to evolve over time as new needs arise.
+This repo contains an ad-hoc collection of utilities for fetching, processing data files, and extracting desired data.
 
-## extractor.py
-This utility can be used to extract the specified columns of a delimited file.  By default, if no delimiter is specified, tabs are expected, however, you can specify a different delimiter.  You can filter your output on a value in an arbitrary column, thus extracting only lines that match on the specified column and value.  Additionally, the utility supports compund expressions for column and match selectors, as described in the `Usage Examples` section below.  Finally, you may use column header names instead of column numbers to specify which columns to extract.
+## Setup
+If you are simply interested in using the utilities, you need only:
+ 1. Install python 2.7
+ 2. Ensure the utility is executable (i.e. ```chmod 755 extractor.py```)
+
+## Development
+All development of these utilities was done on Mac OS X, in python 2.7.  Every effort has been made to utilize only libraries in the python standard library suite for both normal use and testing/development.
+
+## Utilities
+### extractor.py
+#### Description
+This utility can be used to extract the specified columns of a delimited file.  By default, if no delimiter is specified, tabs are expected, however, you can specify a different delimiter.  You can filter your output on a value in an arbitrary column, thus extracting only lines that match on the specified column and value.  Additionally, the utility supports compound expressions for column and match selectors, as described in the `Usage Examples` section below.  Finally, you may use column header names instead of column numbers to specify which columns to extract.
 
 __NOTE:__ At this time, no effort is made to deduplicate the column list.  If a column is listed multiple times, it will apear that many times in the output file.  It is assumed that the column was listed the number of times it was desired to appear in the output file.
 
@@ -34,8 +44,11 @@ Options:
   -m MATCH, --match=MATCH
                         (optional) column and string to match on.  EX: 2:chr1
                         to match all lines where column 2 contains 'chr1', or
-                        chr1 to match any column containing 'chr1'.  NOTE:
-                        multiple values listed together are ANDed together.
+                        'chr1' to match any column containing 'chr1'.  NOTE:
+                        multiple values listed together are ANDed together
+                        unless --match-mode is used also
+  -r, --match-or        Changes matching to OR mode instead of default AND
+                        mode
 ```
 
 ##### Usage Examples
@@ -77,4 +90,9 @@ $ ./extractor.py -i inputfile.tsv -o outputfile.tsv -m E003
 Extract all rows where any column matches 'E003' or 'E027':
 ```bash
 $ ./extractor.py -i inputfile.tsv -o outputfile.tsv -m E003,E027
+```
+
+Extract all rows where column 3 matches E003 or any column matches 'E027':
+```bash
+$ ./extractor.py -i inputfile.tsv -o outputfile.tsv -r -m 3:E003,E027
 ```
